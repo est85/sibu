@@ -1,0 +1,56 @@
+#
+# This is the server logic of a Shiny web application. You can run the 
+# application by clicking 'Run App' above.
+#
+# Find out more about building applications with Shiny here:
+# 
+#    http://shiny.rstudio.com/
+#
+
+library(shiny)
+
+# Define server logic required to draw a histogram
+shinyServer(function(input, output) {
+   
+    # Dropdown for information
+    observeEvent(input$openModal, {
+        showModal(
+            modalDialog(title = "¿Quienes somos?",
+                        p("SIBU Data Science and Robotics ..."))
+        )
+    })
+    
+    # Resultados de los datos cargados
+    output$contents <- renderDataTable({
+        
+        # input$file1 will be NULL initially. After the user selects
+        # and uploads a file, head of that data file by default,
+        # or all rows if selected, will be shown.
+        
+        req(input$file1)
+        
+        # when reading semicolon separated files,
+        # having a comma separator causes `read.csv` to error
+        tryCatch(
+            {
+                df <- read.csv(input$file1$datapath,
+                               header = input$header,
+                               sep = input$sep,
+                               dec = input$dec)
+            },
+            error = function(e) {
+                # return a safeError if a parsing error occurs
+                stop(safeError(e))
+            }
+        )
+        
+        if(input$disp == "head") {
+            return(head(df))
+        }
+        else {
+            return(datatable(df))
+        }
+        
+    })
+  
+})
